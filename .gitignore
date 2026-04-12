@@ -1,0 +1,17 @@
+# Environnement virtuel
+venv/
+.env
+
+# Python (fichiers temporaires)
+__pycache__/
+*.py[cod]
+
+# Données (Optionnel : si vos datasets sont très lourds)
+# data/raw/
+
+# Modèles sauvegardés
+models/*.pkl
+models/*.joblib
+
+# OS
+.DS_Store
