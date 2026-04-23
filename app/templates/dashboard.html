@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}ChurnIQ — Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { margin-bottom: 2rem; }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800; margin-bottom: 0.4rem;
+  }
+  .page-header p { color: var(--muted); font-size: 0.95rem; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--accent); }
+  .kpi-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1; }
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.red   { color: var(--red); }
+  .kpi-value.blue  { color: #3b82f6; }
+  .kpi-value.orange{ color: var(--orange); }
+  .kpi-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 700px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .chart-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: var(--text);
+  }
+
+  /* Donut chart via CSS */
+  .donut-wrap {
+    display: flex; align-items: center; gap: 2rem;
+    justify-content: center;
+  }
+  .donut {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--red)    0deg calc(var(--churn-deg)),
+      var(--green)  calc(var(--churn-deg)) 360deg
+    );
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .donut::after {
+    content: '';
+    position: absolute;
+    width: 70px; height: 70px;
+    background: var(--surface);
+    border-radius: 50%;
+  }
+  .donut-legend { display: flex; flex-direction: column; gap: 0.6rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Horizontal bar metrics */
+  .metric-bars { display: flex; flex-direction: column; gap: 1rem; }
+  .metric-bar-row {}
+  .metric-bar-header {
+    display: flex; justify-content: space-between;
+    font-size: 0.83rem; margin-bottom: 0.35rem;
+  }
+  .metric-bar-header .name { color: var(--muted); }
+  .metric-bar-header .val  { color: var(--text); font-weight: 600; }
+  .bar-track {
+    height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 99px; }
+
+  .model-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+  .model-info-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  .model-info-item .mi-label { color: var(--muted); font-size: 0.78rem; margin-bottom: 0.2rem; }
+  .model-info-item .mi-value { font-weight: 600; }
+
+  .error-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    color: #fca5a5;
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>📊 Dashboard Performance</h1>
+    <p>Résultats du modèle RandomForest sur le jeu de test (20% des données).</p>
+  </div>
+
+  {% if stats.error %}
+    <div class="error-box">❌ {{ stats.error }} — Lancez d'abord <code>src/train_model.py</code></div>
+  {% else %}
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Accuracy</div>
+      <div class="kpi-value green">{{ stats.accuracy }}%</div>
+      <div class="kpi-sub">Taux de classification correcte</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">F1-Score (Churn)</div>
+      <div class="kpi-value blue">{{ stats.f1 }}%</div>
+      <div class="kpi-sub">Équilibre précision / rappel</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Precision</div>
+      <div class="kpi-value orange">{{ stats.precision }}%</div>
+      <div class="kpi-sub">Churners correctement identifiés</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Recall</div>
+      <div class="kpi-value orange">{{ stats.recall }}%</div>
+      <div class="kpi-sub">Churners réels détectés</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Clients test</div>
+      <div class="kpi-value">{{ stats.total }}</div>
+      <div class="kpi-sub">Taille du jeu de test</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Taux de churn</div>
+      <div class="kpi-value red">{{ stats.rate }}%</div>
+      <div class="kpi-sub">{{ stats.churners }} clients à risque</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <!-- Donut: distribution prédite -->
+    <div class="chart-card">
+      <h3>Distribution prédite des clients</h3>
+      {% set churn_pct = stats.rate %}
+      {% set loyal_pct = 100 - stats.rate %}
+      <div class="donut-wrap">
+        <div class="donut"
+             style="--churn-deg: {{ (churn_pct / 100 * 360)|round }}deg">
+        </div>
+        <div class="donut-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--red)"></div>
+            <span>Churné — {{ churn_pct }}%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--green)"></div>
+            <span>Fidèle — {{ loyal_pct }}%</span>
+          </div>
+          <div style="margin-top:0.5rem; font-size:0.8rem; color:var(--muted);">
+            {{ stats.churners }} / {{ stats.total }} clients
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métriques du modèle -->
+    <div class="chart-card">
+      <h3>Métriques de performance</h3>
+      <div class="metric-bars">
+        <div class="metric-bar-row">
+          <div class="metric-bar-header">
+            <span class="name">Accuracy</span>
+            <span class="val">{{ stats.accuracy }}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{{ stats.accuracy }}%; background:#22c55e;"></div>
+          </div>
+        </div>
+        <div class="metric-bar-row">
+          <div class="metric-bar-header">
+            <span class="name">F1-Score</span>
+            <span class="val">{{ stats.f1 }}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{{ stats.f1 }}%; background:#3b82f6;"></div>
+          </div>
+        </div>
+        <div class="metric-bar-row">
+          <div class="metric-bar-header">
+            <span class="name">Precision</span>
+            <span class="val">{{ stats.precision }}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{{ stats.precision }}%; background:#f97316;"></div>
+          </div>
+        </div>
+        <div class="metric-bar-row">
+          <div class="metric-bar-header">
+            <span class="name">Recall</span>
+            <span class="val">{{ stats.recall }}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{{ stats.recall }}%; background:#f59e0b;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info modèle -->
+  <div class="chart-card">
+    <h3>ℹ️ Informations du modèle</h3>
+    <div class="model-info-grid" style="margin-top:0.5rem;">
+      <div class="model-info-item">
+        <div class="mi-label">Algorithme</div>
+        <div class="mi-value">Random Forest Classifier</div>
+      </div>
+      <div class="model-info-item">
+        <div class="mi-label">Optimisation</div>
+        <div class="mi-value">GridSearchCV (5-fold CV)</div>
+      </div>
+      <div class="model-info-item">
+        <div class="mi-label">Clustering</div>
+        <div class="mi-value">KMeans (4 segments)</div>
+      </div>
+      <div class="model-info-item">
+        <div class="mi-label">Réduction</div>
+        <div class="mi-value">ACP (95% variance)</div>
+      </div>
+      <div class="model-info-item">
+        <div class="mi-label">Split</div>
+        <div class="mi-value">80% train / 20% test</div>
+      </div>
+      <div class="model-info-item">
+        <div class="mi-label">Clients à haut risque</div>
+        <div class="mi-value" style="color:var(--red);">{{ stats.high_risk }} (proba ≥ 75%)</div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}

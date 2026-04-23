@@ -1,17 +1,43 @@
 # Environnement virtuel
 venv/
-.env
+env/
+.venv/
 
-# Python (fichiers temporaires)
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
 
-# Données (Optionnel : si vos datasets sont très lourds)
-# data/raw/
+# Données brutes (trop lourdes pour git)
+data/raw/
+data/processed/
+data/train_test/
 
-# Modèles sauvegardés
-models/*.pkl
-models/*.joblib
+# Modèles sauvegardés (optionnel - décommentez pour les exclure)
+# models/
+
+# Reports générés
+reports/*.png
+reports/*.csv
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Variables d'environnement
+.env
+*.env

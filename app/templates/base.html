@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}ChurnIQ{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #13131a;
+      --border:   #1e1e2e;
+      --accent:   #6366f1;
+      --accent2:  #818cf8;
+      --green:    #22c55e;
+      --red:      #ef4444;
+      --orange:   #f97316;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --radius:   12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--accent2);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-brand span { color: var(--accent); }
+    nav ul { list-style: none; display: flex; gap: 0.25rem; }
+    nav ul li a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    nav ul li a:hover, nav ul li a.active {
+      color: var(--text);
+      background: var(--border);
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-brand">Churn<span>IQ</span></a>
+    <ul>
+      <li><a href="/" {% if request.path == '/' %}class="active"{% endif %}>Accueil</a></li>
+      <li><a href="/predict" {% if request.path == '/predict' %}class="active"{% endif %}>Prédiction</a></li>
+      <li><a href="/dashboard" {% if request.path == '/dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+    </ul>
+  </nav>
+  {% block content %}{% endblock %}
+  <footer>ChurnIQ — Atelier Machine Learning · GI2 · 2025-2026</footer>
+</body>
+</html>
